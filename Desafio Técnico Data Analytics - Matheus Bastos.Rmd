@@ -1,0 +1,812 @@
+---
+title: "Desafio Técnico Data Analytics (ESTÁGIO) - Matheus Bastos"
+author: "Matheus Bastos"
+date: "01 de maio de 2021"
+output: html_document
+---
+\
+#### Breve introdução
+
+\
+Olá ! Meu nome é Matheus Bastos, sou estudante de Estatística (por amor) da UFAM e realizei este desafio utilizando a linguagem R :)
+
+\
+Durante a construção do código, tentei sempre incluir gráficos que nos ajudam a visualizar os resultados obtidos. Além disso, ao longo de cada etapa, optei por colocar uma breve descrição da análise realizada com o objetivo de deixar o mais claro possível cada etapa realizada. 
+
+\
+Estarei à disposição para sanar qualquer dúvida relacionada ao código e às análises :) 
+
+\
+Desde já agradeço a oportunidade e de participar desta seleção que têm me agregado bastante conhecimento. 
+
+\
+### PARTE 3 DO DESAFIO
+
+\
+#### QUESTÕES 1 E 2: ESTATÍSTICAS BÁSICAS DA COMPRA E COMO OS DADOS ESTÃO DISTRIBUÍDOS AO LONGO DO TEMPO.
+
+\
+A primeira etapa realizada foi a importação das bases de dados para o ambiente do Rstudio. 
+
+\
+O arquivo **_Dados_vale_credito_tabela1.csv_** será definido como **tabela1**.
+
+\
+O arquivo **_Dados_vale_credito_tabela2.csv_** será definido como **tabela2**.
+
+\
+**IMPORTAÇÃO DOS ARQUIVOS:**
+
+```{r}
+library(readr)
+
+#TABELA 1 - arquivo: "Dados_vale_credito_tabela1.csv"
+tabela1 = read_csv("Dados_vale_credito_tabela1.csv") #importação da tabela1
+
+#TABELA 2 - arquivo: "Dados_vale_credito_tabela2.csv"
+tabela2 = read.csv("Dados_vale_credito_tabela2.csv")
+
+```
+\
+Ao importar as tabelas para o RStudio, podemos visualizar melhor os dados e perceber que a **tabela 1** e a **tabela 2** possuem características distintas. 
+
+\
+A **tabela 1** apresenta a descrição do **NIVEL** de cada cliente e seus respectivos **SALDOS**, além de informar a **DATA DE MUDANÇA** de nível dos cliente.
+
+\
+Já a **tabela 2** apresenta os **TIPOS DE TRANSAÇÕES** realizadas pelos clientes, o **VALOR MOVIMENTADO** em cada transação, o **SALDO** após a transação e outras informações como data da operação e a loja em que foi realizada. 
+
+\
+Visto que as duas tabelas nos proporcionam uma série de variáveis distintas, optarei por analisar as duas tabelas de forma independente. Assim poderemos extrair o máximo de informação de cada uma delas :)
+
+\
+##### EXPLORANDO OS DADOS DA TABELA 1
+
+\
+###### 1. Distribuição dos níveis - Clientes TABELA 1
+
+\
+Primeiro, iremos analisar a distribuição dos níveis entres os clientes apresentados na TABELA 1:
+
+\
+```{r}
+#Número de clientes de cada nivel
+#Criando uma tabela com os distintos níveis de clientes e a frequência de cada. 
+
+nivel_clientes = as.data.frame(table(tabela1$DESCRICAO_NIVEL)) 
+
+nivel_clientes
+
+#Cálculo da porcentagem que cada nível representa na TABELA 1:
+
+azul = round((nivel_clientes[1,2]/1000)*100, 2)
+diamante = round((nivel_clientes[2,2]/1000)*100, 2)
+diamante_mais = round((nivel_clientes[3,2]/1000)*100, 2)
+ouro = round((nivel_clientes[4,2]/1000)*100, 2)
+prata = round((nivel_clientes[5,2]/1000)*100, 2)
+
+#Colocando os valores em um vetor para a construção do gráfico:
+
+vetor_niveis = c(azul, diamante, diamante_mais, ouro, prata)
+
+#Construção do gráfico:
+
+pie(vetor_niveis, main = "Níveis dos clientes (%) - TABELA 1", labels = vetor_niveis, col = seq(1,5))
+
+legend("topleft", fill = seq(1,5), legend = c("NIVEL AZUL", "DIAMANTE", "DIAMANTE+", "OURO", "PRATA"), cex = 0.8)
+
+```
+\
+Percebemos então, na TABELA 1, que **44.8%** dos clientes pertencem ao nível **DIAMANTE+**, **29.7%** ao nível **DIAMANTE**, **16.6%** ao nível **OURO**, **7.8%** ao nível **PRATA** e apenas **1.1%** ao nível **AZUL**.
+
+\
+Portanto, através da TABELA 1 é perceptível que a maior mudança de pedra foi a realizada pelos clientes que chegaram no nível DIAMANTE+, seguidos pelos clientes que chegaram no nível DIAMANTE. Esse crescimento, seguindo a orientação dos níveis, demonstra um processo eficaz de fidelização dos clientes.
+
+\
+###### 2. Análise dos saldos - Clientes TABELA 1
+
+\
+A TABELA 1 também informa o SALDO de cada um dos 1000 clientes. Podemos encontrar o saldo médio entre os clientes da TABELA 1.
+
+\
+```{r}
+media.saldos = round(mean(tabela1$SALDO_VC), 2)
+mediana.saldos = round(median(tabela1$SALDO_VC), 2)
+
+cat("O saldo médio dos clientes da TABELA 1 é: R$" , media.saldos , "\n")
+
+cat("A mediana entre saldos é: R$", mediana.saldos)
+```
+\
+Para este caso, o **saldo médio** de **R$ 21,85** pode ser um valor enganoso, visto que a diferença entre o valor do maior saldo e do menor é proporcionalmente muito grande. Portanto, o cálculo da mediana nos possibilita uma reflexão mais próxima da realidade. 
+
+\
+A **mediana** dos saldos tem valor de **R$ 0,98**. Isso significa que aproximadamente METADE dos clientes não possuem um saldo de vale crédito superior à **R$ 1**. 
+
+\
+Com o objetivo de encontrar uma análise ainda mais aprofundada dos saldos, podemos calcular individualmente a média e mediana de cada um dos NÍVEIS.
+
+\
+```{r}
+
+#Media dos saldos de cada nivel
+media.diamante.plus = round(mean(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "DIAMANTE+"]),2)
+media.diamante = round(mean(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "DIAMANTE"]),2)
+media.ouro = round(mean(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "OURO"]),2)  
+media.prata = round(mean(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "PRATA"]),2)
+media.azul = round(mean(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "AZUL"]),2)
+
+#Mediana dos saldos de cada nivel
+mediana.diamante.plus = round(median(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "DIAMANTE+"]),2)
+mediana.diamante = round(median(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "DIAMANTE"]),2)
+mediana.ouro = round(median(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "OURO"]),2)  
+mediana.prata = round(median(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "PRATA"]),2)
+mediana.azul = round(median(tabela1$SALDO_VC[tabela1$DESCRICAO_NIVEL == "AZUL"]),2)
+
+#Vetores com os resultados
+v.media = c(media.diamante.plus, media.diamante, media.ouro, media.prata, media.azul)
+v.mediana = c(mediana.diamante.plus, mediana.diamante, mediana.ouro, mediana.prata, mediana.azul)
+
+#GRÁFICO PARA AS MÉDIAS
+library(ggplot2)
+
+niveis = c("DIAMANTE+", "DIAMANTE", "OURO", "PRATA", "AZUL")
+
+df.medias = data.frame(niveis, v.media)
+
+ggplot(df.medias, aes(y = v.media, x = niveis, fill = niveis)) +
+  geom_bar(stat = "identity") +
+  geom_col() +
+  labs(title = "VALOR MÉDIO DOS SALDOS POR NÍVEL")
+
+#GRÁFICO PARA AS MEDIANAS
+
+df.medianas = data.frame(niveis, v.mediana)
+
+ggplot(df.medianas, aes(y = v.mediana, x = niveis, fill = niveis)) +
+  geom_bar(stat = "identity") +
+  geom_col() +
+  labs(title = "VALOR DAS MEDIANAS POR NÍVEL")
+
+```
+\
+O resultado que obtemos demonstra que o **MAIOR saldo médio**, entre os níveis, é o saldo médio dos clientes de nível **AZUL** que possuem um saldo médio de aproximadamente **R$ 50,21**. Mas a mediana desse nível, demonstra que pelo menos 50% dos clientes não chegam ao saldo de **R$ 0,60**. 
+
+\
+Diferentemente dos clientes do nível **DIAMANTE**, que possuem um saldo médio de **R$ 24,22**, mas que através da mediana, demonstra que metade dos clientes nesse nível, possuem o **dobro** do saldo dos clientes no nível **AZUL**. 
+
+\
+###### 3. Datas de mudança de pedra - Clientes TABELA 1
+
+\
+Outra variável da TABELA 1 são as DATAS de Mudança das pedras. Todas as datas são referentes ao ano de 2020. Portanto, farei a análise das mudanças de pedra ao longo dos meses de 2020. 
+
+\
+```{r}
+#DATAS NA TABELA 1
+
+library(lubridate)
+
+class(tabela1$DT_MUDANCA_PEDRA)
+
+#Anos das mudanças listadas na tabela:
+
+table(year(tabela1$DT_MUDANCA_PEDRA)) 
+
+#Percebe-se que todas as mudanças são de 2020, distribuídas nos meses de MAIO, JUNHO E JULHO.
+
+#Quantidade de mudanças por mês
+
+meses = table(months.Date(tabela1$DT_MUDANCA_PEDRA))
+meses
+
+#Gráfico do número de mudanças em 2020
+
+pie(meses, main = "Número de Mudanças Mensais - TABELA 1", labels = meses, col = seq(6,9))
+legend("topleft", fill = seq(6,9), legend = c("JULHO", "JUNHO", "MAIO"), cex = 1)
+
+```
+\
+A tabela nos proporciona apenas o cenário de 3 meses de operações de mudança de pedra. Tendo a maior concentração no mês de JUNHO.
+
+\
+\
+##### EXPLORANDO OS DADOS DA TABELA 2 
+
+\
+###### 1. Análise dos clientes - TABELA 2:
+
+\
+```{r}
+#Analisando os clientes da TABELA 2
+
+#Utilizando a função table, veremos quantos clientes distintos temos na tabela e a respectiva frequencia de operações realizadas por cada um. 
+
+cliente2 = table(tabela2$CLIENTE)
+
+#Encontrando o maior número de operações realizadas por um único cliente:
+
+cliente2[which.max(cliente2)]
+
+```
+\
+Com a operação, encontramos o cliente com o maior número de operações realizadas ao longo dos registros da TABELA 2. O cliente **1245390** realizou ao todo, **54** operações. 
+
+\
+Além disso, encontrar a frequência de operações realizadas pelos clientes nos permite identificar o perfil de compra de cada cliente. 
+
+\
+###### 2. Análise de DÉBITOS e CRÉDITOS - TABELA 2
+
+\
+Uma das variáveis apresentada na TABELA 2 é de **DÉBITOS E CRÉDITOS**, descrita na coluna **DEBITO_OU_CREDITO**. Analisaremos qual a tendência desses fatores (Débito ou Crédito) nas operações listadas na tabela.
+
+\
+É importante destacar a função dessas duas variáveis. 
+
+\
+A variável *DÉBITO* retira o valor X do saldo. Enquanto a variável *CRÉDITO* acrescenta o valor X ao saldo do cliente que realizou a operação. 
+
+\
+```{r}
+#transformar as opções em uma tabela - identificar a frequencia de cada
+
+debito_credito = table(tabela2$DEBITO_OU_CREDITO)
+debito_credito
+
+#total de operações realizadas
+total.de.operacoes = sum(debito_credito)
+
+#calculo da porcentagem das opções DÉBITO E CRÉDITO
+credito = round((debito_credito[1]/total.de.operacoes)*100, 2)
+
+debito = round((debito_credito[2]/total.de.operacoes)*100, 2)
+
+#Construção do Gráfico
+
+v.debito_credito = c(credito, debito)
+
+pie(v.debito_credito, main = "OPERAÇÕES DÉBITO/CRÉDITO (%) - TABELA 2" , labels = v.debito_credito, col = c(4,2))
+legend("topright", fill = c(4,2), legend = c("CRÉDITO", "DÉBITO"))
+
+```
+\
+Podemos perceber que a opção **CRÉDITO** foi utilizada em **70,67%** das vezes na TABELA 2. Isso demonstra uma grande adesão de créditos nos saldos dos clientes. A utilização desses créditos através da opção de DÉBITO se encontra representado com apenas **30%** das operações. 
+
+\
+###### 3. Análise dos Tipos de Transações - TABELA 2
+
+\
+Um dos elementos que constam na TABELA 2 são os tipos de transações realizadas pelos cliente. Farei uma análise dessas operações para identificar a preferência dos clientes. 
+
+\
+O primeiro passo é identificar quais são os tipos de transações e as respectivas frequências com as quais eles aparecem na TABELA 2.
+
+\
+```{r}
+#Criando o data frame com as operações e frequências
+tipos.de.transacoes = as.data.frame(table(tabela2$TIPO_TRANSACAO_VC))
+
+#trocando os nomes das colunas
+colnames(tipos.de.transacoes)[1] = "TRANSACAO"
+colnames(tipos.de.transacoes)[2] = "FREQUENCIA"
+
+```
+\
+Descobrimos então que a tabela possui 21 tipos distintos de transações. Com isso, podemos analisar a representação percentual de cada uma dessas transações na TABELA 2. 
+
+\
+```{r}
+#Cálculo das porcentagens dos tipos de Transação da TABELA 2
+# Há um acréscimo de 2 novos tipos de transação: debito.duplicidade e doacoes
+
+ajuste.contabil.2 = round((tipos.de.transacoes[1,2]/total.de.operacoes)*100 , 2)
+lancamento.incorreto.2 = round((tipos.de.transacoes[2,2]/total.de.operacoes)*100, 2)
+credito.conversao.2 = round((tipos.de.transacoes[3,2]/total.de.operacoes)*100, 2)
+credito.gerado.devo.2 = round((tipos.de.transacoes[4,2]/total.de.operacoes)*100, 2)
+credito.gerado.compra.2 = round((tipos.de.transacoes[5,2]/total.de.operacoes)*100, 2)
+credito.compra.lista.2 = round((tipos.de.transacoes[6,2]/total.de.operacoes)*100, 2)
+credito.troco.2 = round((tipos.de.transacoes[7,2]/total.de.operacoes)*100, 2)
+credito.premiacao.2 = round((tipos.de.transacoes[8,2]/total.de.operacoes)*100, 2)
+credito.premiacao.gerenci.2 = round((tipos.de.transacoes[9,2]/total.de.operacoes)*100, 2)
+debito.automatico.2 = round((tipos.de.transacoes[10,2]/total.de.operacoes)*100, 2)
+debito.compra.2 = round((tipos.de.transacoes[11,2]/total.de.operacoes)*100, 2)
+debito.devolucao.compra.2 = round((tipos.de.transacoes[12,2]/total.de.operacoes)*100, 2)
+debito.devolucao.compra.vc.2 = round((tipos.de.transacoes[13,2]/total.de.operacoes)*100, 2)
+debito.duplicidade = round((tipos.de.transacoes[14,2]/total.de.operacoes)*100, 2)
+debito.estorno.pres.2 = round((tipos.de.transacoes[15,2]/total.de.operacoes)*100, 2)
+debito.estorno.troco.2 = round((tipos.de.transacoes[16,2]/total.de.operacoes)*100, 2)
+debito.pagamento.vc.2 = round((tipos.de.transacoes[17,2]/total.de.operacoes)*100, 2)
+debito.por.estorno.2 = round((tipos.de.transacoes[18,2]/total.de.operacoes)*100, 2)
+doacoes = round((tipos.de.transacoes[19,2]/total.de.operacoes)*100, 2)
+transferencia.clientes.2 = round((tipos.de.transacoes[20,2]/total.de.operacoes)*100, 2)
+transferencia.whasapp.2 = round((tipos.de.transacoes[21,2]/total.de.operacoes)*100, 2)
+
+# Reunindo as porcentagens em um único vetor 
+
+transacoes = c(ajuste.contabil.2, lancamento.incorreto.2, credito.conversao.2, credito.gerado.devo.2, credito.gerado.compra.2, credito.compra.lista.2, credito.troco.2, credito.premiacao.2, credito.premiacao.gerenci.2, debito.automatico.2, debito.compra.2, debito.devolucao.compra.2, debito.devolucao.compra.vc.2,debito.duplicidade, debito.estorno.pres.2, debito.estorno.troco.2, debito.pagamento.vc.2, debito.por.estorno.2, doacoes, transferencia.clientes.2, transferencia.whasapp.2)
+
+# Incluindo o vetor de Porcentagem no Data Frame dos Tipos de Transação
+
+tipos.de.transacoes$Porcentagem = transacoes
+
+# Nota-se a mesma proporção da TABELA 1: Aproximadamente 99% das operações concentra-se em apenas 6 tipos de transação
+
+# Valores maiores que 1%
+
+im = which(tipos.de.transacoes$Porcentagem > 1)
+maiores.transacoes = tipos.de.transacoes[im, ] #Tais valores são os mais recorrentes.
+
+#valores menores ou iguais a 1%
+
+ie = which(tipos.de.transacoes$Porcentagem <= 1)
+menores.transacoes = tipos.de.transacoes[ie, ] 
+
+freq.menores = sum(menores.transacoes$FREQUENCIA)
+porcent.menores = sum(menores.transacoes$Porcentagem) #Representam apenas 1% do total
+
+#Acrescentando as informações da menor parte no data frame que mostrará o gráfico 
+
+linha = data.frame(TRANSACAO = "OUTROS" , FREQUENCIA = freq.menores, Porcentagem = porcent.menores)
+
+maiores.transacoes = rbind(maiores.transacoes, linha)
+
+#Construção do gráfico proporcional para os tipos de Transações da TABELA 2
+
+library(ggplot2)
+
+idx = order(maiores.transacoes$Porcentagem, decreasing = TRUE)
+
+levels = maiores.transacoes$TRANSACAO[idx]
+
+maiores.transacoes$TRANSACAO = factor(maiores.transacoes$TRANSACAO, levels=levels, ordered=TRUE)
+
+ggplot(maiores.transacoes, aes(x = TRANSACAO, y = Porcentagem, fill = TRANSACAO)) +
+  geom_col() +
+  labs(title = "TIPOS DE TRANSAÇÕES (%) - TABELA 2") 
+
+
+```
+\
+Com o gráfico, ficou visualmente fácil de notar que a transação **_CREDITO POR TROCO_** foi a mais utilizada dentre as operações registradas na TABELA 2.
+
+\
+A transação representa **61,76%** do total de operações realizadas. A possível justificativa para essa margem tão grande é a facilidade da sua realização ao final de toda compra, tendo uma grande adesão por parte dos clientes. 
+
+\
+A tabela a seguir apresenta a demonstração percentual de todos os tipos de transações:
+
+\
+```{r}
+library(formattable)
+
+formattable::formattable(maiores.transacoes, caption = "Porcentagem das opções de transação")
+
+```
+
+\
+###### 4. Análise das transações ao longo dos anos - TABELA 2
+
+\
+O objetivo dessa análise é observar o crescimento (ou diminuição) das operações registradas em cada ano.
+
+\
+```{r}
+#TRABALHANDO COM TEMPO
+library(lubridate)
+
+#Transformando a classe para DATE
+tabela2$DATA_DA_MOVIMENTACAO = as.Date(tabela2$DATA_DA_MOVIMENTACAO)
+
+#QUANTIDADE DE MOVIMENTAÇÕES ANUAIS
+
+#Criando um tabela com o numero de operações de cada ano
+ano = as.data.frame(table(year(tabela2$DATA_DA_MOVIMENTACAO)))
+colnames(ano)[1] = "ANO"
+colnames(ano)[2] = "N_DE_OPERACOES"
+
+#Gráfico em barras DA QUANTIDADE DE MOVIMENTAÇÕES ANUAIS
+
+library(ggplot2)
+
+idxt2 = order(ano$ANO, decreasing = F)
+
+levels = ano$ANO[idxt2]
+
+ano$ANO = factor(ano$ANO, levels=levels, ordered= F)
+
+ggplot(ano, aes(x = ANO, y = N_DE_OPERACOES, fill = ANO)) +
+  geom_col() +
+  labs(title = "NÚMERO ANUAL DE OPERAÇÕES - TABELA 2")
+
+```
+\
+O gráfico apresenta um notório crescimento do número de operações realizadas ao longo dos anos.Apesar do crescimento nos anos de 2017, 2018 e 2019, é possível observar uma leva queda em 2020 em relação ao ano anterior.
+
+\
+Por conta disso, faremos uma análise do percentual de crescimento anual. 
+
+\
+```{r}
+# Crescimento percentual em relação ao ano anterior
+crescimento17 = round(((ano[2,2] - ano[1,2]) / ano[1,2])*100, 2)
+crescimento18 = round(((ano[3,2] - ano[2,2]) / ano[2,2])*100, 2)
+crescimento19 = round(((ano[4,2] - ano[3,2]) / ano[3,2])*100, 2)
+crescimento20 = round(((ano[5,2] - ano[4,2]) / ano[4,2])*100, 2)
+
+# agrupando em um vetor
+v.cresc = c(crescimento17, crescimento18, crescimento19, crescimento20)
+
+# resultado
+cat("O crescimento médio anual, do número de operações, é:" ,mean(v.cresc), "%")
+
+```
+\
+A TABELA 2 apresenta um expressivo crescimento médio nas operações ao longo dos anos. O crescimento médio anual chega à expressiva taxa de **32.24 %**. O único ano que apresenta redução neste crescimento é o de 2020 com uma *queda* de **-4.5%** no número de operações. 
+
+\
+Uma possível justificativa para essa redução em 2020 é o enfrentamento da pandemia de COVID-19 que ocasionou diversas restrições comerciais.
+
+\
+Além disso, podemos analisar a distribuição das operações ao longo dos meses do ano com o objetivo de identificar os meses com maior e menor fluxo de operações.
+
+\
+```{r}
+#Meses das movimentações
+meses2 = table(month(tabela2$DATA_DA_MOVIMENTACAO))
+
+#Porcentagem do número de operações em cada mês
+jan = round((meses2[1]/total.de.operacoes)*100, 2)
+fev = round((meses2[2]/total.de.operacoes)*100, 2)
+mar = round((meses2[3]/total.de.operacoes)*100, 2)
+abr = round((meses2[4]/total.de.operacoes)*100, 2)
+mai = round((meses2[5]/total.de.operacoes)*100, 2)
+jun = round((meses2[6]/total.de.operacoes)*100, 2)
+jul = round((meses2[7]/total.de.operacoes)*100, 2)
+ago = round((meses2[8]/total.de.operacoes)*100, 2)
+set = round((meses2[9]/total.de.operacoes)*100, 2)
+out = round((meses2[10]/total.de.operacoes)*100, 2)
+nov = round((meses2[11]/total.de.operacoes)*100, 2)
+dez = round((meses2[12]/total.de.operacoes)*100, 2)
+
+#Vetores para o Gráfico
+v2_meses = c(jan, fev, mar, abr, mai, jun, jul, ago, set, out, nov, dez)
+v2_nomes = c("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
+
+#Data frame que irá gerar o gráfico
+v2_meses = as.data.frame(v2_meses)
+v2_meses = cbind(v2_meses, v2_nomes)
+
+colnames(v2_meses)[1] = "Porcentagem"
+colnames(v2_meses)[2] = "Mês"
+
+#Construção do gráfico de barras
+library(ggplot2)
+
+v2_meses$Mês = factor(v2_meses$Mês, levels = v2_meses$Mês, ordered= F)
+
+ggplot(v2_meses, aes(x = Mês, y = Porcentagem, fill = Mês)) +
+  geom_col() +
+  labs(title = "DISTRIBUIÇÃO PERCENTUAL DO NÚMERO DE OPERAÇÕES NOS MESES")
+
+```
+\
+O gráfico demonstra a distribuição mensal das opeções. É perceptível que o mês de **ABRIL** possui o menor número de operações resgistradas, tendo uma recuperação a partir do mês de **JULHO**.
+
+\
+Os meses de **agosto, setembro e outubro**, possuem, percentualmente, o maior número de operações realizadas em relação aos demais meses. Além disso, percebemos uma regularidade entre os meses de **dezembro, janeiro, fevereiro e março**.  
+
+\
+###### 5. Análise individual dos tipos de operações - TABELA 2 
+
+\
+Esta análise tem objetivo de dimensionar, individualmente, as operações realizadas em cada ano. 
+
+\
+Poderemos, ao final da análise, identificar quais os tipos de transações foram mais utilizados nos anos descritos e também realizar uma análise focada em 2020.
+
+\
+Começaremos descrevendo a frequência de cada operação entre os anos de 2016 e 2020. 
+
+\
+```{r}
+#criando o data frame (ANO | TIPO DE TRANSAÇÃO)
+
+transacao.ano= as.data.frame(format(tabela2$DATA_DA_MOVIMENTACAO , "%Y"))
+transacao.ano = cbind(transacao.ano , tabela2$TIPO_TRANSACAO_VC)
+
+colnames(transacao.ano)[1] = "anos"
+colnames(transacao.ano)[2] = "transação"
+
+# TABELA EM QUE SERÁ ACRESCENTADA AS INFORMAÇÕES
+operacoes.individuais = as.data.frame(table(year(tabela2$DATA_DA_MOVIMENTACAO)))
+colnames(operacoes.individuais)[1] = "ANO"
+colnames(operacoes.individuais)[2] = "TOTAL DE OPERAÇÕES"
+
+#CREDITO_POR_TROCO
+
+num.trsc.2020.cred = sum(transacao.ano$anos == "2020" & transacao.ano$transação == "CREDITO_POR_TROCO")
+num.trsc.2019.cred = sum(transacao.ano$anos == "2019" & transacao.ano$transação == "CREDITO_POR_TROCO")
+num.trsc.2018.cred = sum(transacao.ano$anos == "2018" & transacao.ano$transação == "CREDITO_POR_TROCO")
+num.trsc.2017.cred = sum(transacao.ano$anos == "2017" & transacao.ano$transação == "CREDITO_POR_TROCO")
+num.trsc.2016.cred = sum(transacao.ano$anos == "2016" & transacao.ano$transação == "CREDITO_POR_TROCO")
+
+repeticoes.cred.troco= c(num.trsc.2016.cred, num.trsc.2017.cred, num.trsc.2018.cred, num.trsc.2019.cred, num.trsc.2020.cred)
+
+operacoes.individuais$CREDITO_POR_TROCO = repeticoes.cred.troco
+
+prct.cred.troco = round(((operacoes.individuais[5,3] - operacoes.individuais[4,3])/operacoes.individuais[4,3])*100, 2) #crescimento/queda percentual em relação ao ano anterior
+
+#DEBITO_PAGAMENTO_COM_VC
+
+num.trsc.2020.deb.pg = sum(transacao.ano$anos == "2020" & transacao.ano$transação == "DEBITO_PAGAMENTO_COM_VC")
+num.trsc.2019.deb.pg = sum(transacao.ano$anos == "2019" & transacao.ano$transação == "DEBITO_PAGAMENTO_COM_VC")
+num.trsc.2018.deb.pg = sum(transacao.ano$anos == "2018" & transacao.ano$transação == "DEBITO_PAGAMENTO_COM_VC")
+num.trsc.2017.deb.pg = sum(transacao.ano$anos == "2017" & transacao.ano$transação == "DEBITO_PAGAMENTO_COM_VC")
+num.trsc.2016.deb.pg = sum(transacao.ano$anos == "2016" & transacao.ano$transação == "DEBITO_PAGAMENTO_COM_VC")
+
+repeticoes.deb.pg= c(num.trsc.2016.deb.pg, num.trsc.2017.deb.pg, num.trsc.2018.deb.pg, num.trsc.2019.deb.pg, num.trsc.2020.deb.pg)
+
+operacoes.individuais$DEBITO_PAGAMENTO_COM_VC = repeticoes.deb.pg
+
+prct.deb.pg = round(((operacoes.individuais[5,4] - operacoes.individuais[4,4])/operacoes.individuais[4,4])*100, 2) #crescimento/queda percentual em relação ao ano anterior
+
+#DEBITO_COMPRA_COM_VC
+
+num.trsc.2020 = sum(transacao.ano$anos == "2020" & transacao.ano$transação == "DEBITO_COMPRA_COM_VC")
+num.trsc.2019 = sum(transacao.ano$anos == "2019" & transacao.ano$transação == "DEBITO_COMPRA_COM_VC")
+num.trsc.2018 = sum(transacao.ano$anos == "2018" & transacao.ano$transação == "DEBITO_COMPRA_COM_VC")
+num.trsc.2017 = sum(transacao.ano$anos == "2017" & transacao.ano$transação == "DEBITO_COMPRA_COM_VC")
+num.trsc.2016 = sum(transacao.ano$anos == "2016" & transacao.ano$transação == "DEBITO_COMPRA_COM_VC")
+
+repeticoes.debito.vc = c(num.trsc.2016, num.trsc.2017, num.trsc.2018, num.trsc.2019, num.trsc.2020)
+
+operacoes.individuais$DEBITO_COMPRA_COM_vc = repeticoes.debito.vc
+
+prct.debito.vc = round(((operacoes.individuais[5,5] - operacoes.individuais[4,5])/operacoes.individuais[4,5])*100 ,2) #crescimento/queda percentual em relação ao ano anterior
+
+#CREDITO_GERADO_POR_COMPRA_DE_VC
+
+num.trsc.2020.cred.ger = sum(transacao.ano$anos == "2020" & transacao.ano$transação == "CREDITO_GERADO_POR_COMPRA_DE_VC")
+num.trsc.2019.cred.ger = sum(transacao.ano$anos == "2019" & transacao.ano$transação == "CREDITO_GERADO_POR_COMPRA_DE_VC")
+num.trsc.2018.cred.ger = sum(transacao.ano$anos == "2018" & transacao.ano$transação == "CREDITO_GERADO_POR_COMPRA_DE_VC")
+num.trsc.2017.cred.ger = sum(transacao.ano$anos == "2017" & transacao.ano$transação == "CREDITO_GERADO_POR_COMPRA_DE_VC")
+num.trsc.2016.cred.ger = sum(transacao.ano$anos == "2016" & transacao.ano$transação == "CREDITO_GERADO_POR_COMPRA_DE_VC")
+
+repeticoes.cred.ger= c(num.trsc.2016.cred.ger, num.trsc.2017.cred.ger, num.trsc.2018.cred.ger, num.trsc.2019.cred.ger, num.trsc.2020.cred.ger)
+
+operacoes.individuais$CREDITO_GERADO_POR_COMPRA_DE_VC = repeticoes.cred.ger
+
+prct.cred.ger = round(((operacoes.individuais[5,6] - operacoes.individuais[4,6])/operacoes.individuais[4,6])*100, 2)#crescimento/queda percentual em relação ao ano anterior
+
+#DEBITO_AUTOMATICO_PAG_PRESTACOES
+
+num.transa.2020.deb.auto = sum(transacao.ano$anos == "2020" & transacao.ano$transação == "DEBITO_AUTOMATICO_PAG_PRESTACOES")
+num.transa.2019.deb.auto = sum(transacao.ano$anos == "2019" & transacao.ano$transação == "DEBITO_AUTOMATICO_PAG_PRESTACOES")
+num.transa.2018.deb.auto = sum(transacao.ano$anos == "2018" & transacao.ano$transação == "DEBITO_AUTOMATICO_PAG_PRESTACOES")
+num.transa.2017.deb.auto = sum(transacao.ano$anos == "2017" & transacao.ano$transação == "DEBITO_AUTOMATICO_PAG_PRESTACOES")
+num.transa.2016.deb.auto = sum(transacao.ano$anos == "2016" & transacao.ano$transação == "DEBITO_AUTOMATICO_PAG_PRESTACOES")
+
+repeticoes.deb.auto = c(num.transa.2016.deb.auto, num.transa.2017.deb.auto, num.transa.2018.deb.auto, num.transa.2019.deb.auto, num.transa.2020.deb.auto)
+
+operacoes.individuais$DEBITO_AUTOMATICO_PAG_PRESTACOES = repeticoes.deb.auto
+
+prct.deb.auto = round(((operacoes.individuais[5,7] - operacoes.individuais[4,7])/operacoes.individuais[4,7])*100 ,2) #crescimento/queda percentual em relação ao ano anterior
+
+#CREDITO_POR_COMPRA_LISTA_PRESENTES
+
+num.transa.2020.cred.lista = sum(transacao.ano$anos == "2020" & transacao.ano$transação == "CREDITO_POR_COMPRA_LISTA_PRESENTES")
+num.transa.2019.cred.lista = sum(transacao.ano$anos == "2019" & transacao.ano$transação == "CREDITO_POR_COMPRA_LISTA_PRESENTES")
+num.transa.2018.cred.lista = sum(transacao.ano$anos == "2018" & transacao.ano$transação == "CREDITO_POR_COMPRA_LISTA_PRESENTES")
+num.transa.2017.cred.lista = sum(transacao.ano$anos == "2017" & transacao.ano$transação == "CREDITO_POR_COMPRA_LISTA_PRESENTES")
+num.transa.2016.cred.lista = sum(transacao.ano$anos == "2016" & transacao.ano$transação == "CREDITO_POR_COMPRA_LISTA_PRESENTES")
+
+repeticoes.cred.lista = c(num.transa.2016.cred.lista, num.transa.2017.cred.lista, num.transa.2018.cred.lista, num.transa.2019.cred.lista, num.transa.2020.cred.lista)
+
+operacoes.individuais$CREDITO_POR_COMPRA_LISTA_PRESENTES = repeticoes.cred.lista
+
+prct.cred.lista = round(((operacoes.individuais[5,8] - operacoes.individuais[4,8])/operacoes.individuais[4,8])*100 , 2) #crescimento/queda percentual em relação ao ano anterior
+
+#criando um vetor com os ganhos/perdas percentuais
+
+prct.tipos.2020 = c(prct.cred.troco, prct.deb.pg, prct.debito.vc, prct.cred.ger, prct.deb.auto, prct.cred.lista)
+
+#TABELA DESCRITIVA COM A QUANTIDADE DE CADA TIPO DE TRANSAÇÃO POR ANO
+
+library(formattable)
+
+formattable::formattable(operacoes.individuais, caption = "Tabela de frequência das operações anuais")
+
+```
+\
+A tabela detalha a quantidade de operações realizadas em cada ano.
+
+\
+A partir desta tabela, realizaremos uma análise focada no ano de **2020** , com o objetivo de encontrar quais operações foram mais realizadas no último ano. 
+
+\
+```{r}
+# NOMES DAS TRANSAÇÕES
+
+nomes.transacoes = c("CREDITO_POR_TROCO", "DEBITO_PAGAMENTO_COM_VC", "DEBITO_COMPRA_COM_VC", "CREDITO_GERADO_POR_COMPRA_DE_VC", "DEBITO_AUTOMATICO_PAG_PRESTACOES", "CREDITO_POR_COMPRA_LISTA_PRESENTES")
+
+# GRÁFICO DO CRESCIMENTO/QUEDA DOS TIPOS DE TRANSAÇÕES EM 2020
+
+tipos.prct = as.data.frame(nomes.transacoes)
+tipos.prct = cbind(tipos.prct, prct.tipos.2020)
+
+colnames(tipos.prct)[1] = "Transação"
+colnames(tipos.prct)[2] = "Porcentagem"
+
+library(ggplot2)
+
+itt = order(tipos.prct$Porcentagem, decreasing = TRUE)
+
+levels = tipos.prct$Transação[itt]
+
+tipos.prct$Transação = factor(tipos.prct$Transação, levels=levels, ordered=TRUE)
+
+ggplot(tipos.prct, aes(x = Transação, y = Porcentagem, fill = Transação)) +
+  geom_col() +
+  labs(title = "CRESCIMENTO PERCENTUAL DOS TIPOS DE TRANSAÇÕES EM 2020")
+
+```
+\
+O gráfico apresenta um aumento percentual, em 2020, de aproximadamente **400%** na transação de **DEBITO_AUTOMATICO_PAG_PRESTACOES** . Um dos possíveis fatores para este crescimento é a facilidade de optar por esse tipo de transação através de aplicativos bancários e o aumento da adesão ao mercado digital. 
+
+\
+Outro ponto notório no gráfico é a expressiva queda do tipo de transação **CREDITO_POR_COMPRA_LISTA_PRESENTE**, mais uma vez, a possível justificativa para essa **queda** em 2020 é devida a Pandemia, que impossibilitou a realização de diversos eventos e festas,o que consequentemente causou diminuição das operações envolvendo essa transação.
+
+\
+###### 6. TICKET MÉDIO - TABELA 2
+
+\
+A coluna **_VALOR MOVIMENTADO_** da TABELA 2 apresenta os valores monetários de cada operação. Observando a variável, nota-se que há valores positivos, resultante de operações de CRÉDITO, e negativos, resultantes de operações de DÉBITO.
+
+\
+Com isso, faremos **dois** tipos de **Ticket médio**. Um ticket referente a **média de valores creditados** e outro referente à **média dos valores debitados** nos saldos dos clientes.
+
+\
+```{r}
+# Transformando a Coluna do Valor Movimentado em uma matriz
+
+valor.movimentado = matrix(tabela2$VALOR_MOVIMENTADO , nrow = total.de.operacoes, ncol = 1 , T)
+
+# Quantidade de valores positivos
+total.pos = sum(valor.movimentado > 0)
+
+# Quantidade de valores positivos
+total.neg = sum(valor.movimentado < 0)
+
+# Quantidade de valores nulos
+total.nulo = sum(valor.movimentado = 0)
+
+# Selecionando os valores acrescentados
+
+is = which(valor.movimentado > 0)
+valor.movimentado.pos = valor.movimentado[is, ] 
+
+ticket.ganho = round(sum(valor.movimentado.pos)/total.pos , 2)
+
+
+# Selecionando os valores descontados
+
+id = which(valor.movimentado < 0)
+valor.movimentado.neg = valor.movimentado[id, ] 
+
+ticket.desc = round(sum(valor.movimentado.neg)/total.neg , 2)
+
+# Resultados 
+
+cat("O ticket médio CREDITADO: R$", ticket.ganho , "\n")
+cat("O ticket médio DEBITADO: R$", ticket.desc )
+
+```
+\
+Além disso, levando em consideração os dois tipos de transação, temos também o **Ticket Médio Total**.
+
+\
+```{r}
+#Soma de todas operações
+receita = sum(tabela2$VALOR_MOVIMENTADO)
+
+#Média Total
+ticket.total = receita/total.de.operacoes
+
+cat("As operações geram um saldo positivo de: R$", receita,"\n","Deixando um Ticket Médio de: R$", round(ticket.total, 2))
+
+```
+\
+\
+##### QUESTÕES 3: Como a compra do vale crédito cresceu/diminuiu nos últimos 6 meses? Quais as principais variáveis que influenciaram isso?
+
+\
+Para realizar esta análise é necessário entender que a transação **CREDITO_GERADO_POR_COMPRA_DE_VC** representa a compra do vale crédito. 
+
+\
+A TABELA 2 lista operações realizadas somente até o mês de **OUTRUBRO DE 2020**. Portanto, iremos analisar a movimentação deste tipo de transação nos 6 meses anteriores.
+
+\
+Teremos:
+
+\
+```{r}
+# Selecionando as colunas da TABELA 2
+
+library(dplyr)
+dados2 = select(tabela2, DATA_DA_MOVIMENTACAO, TIPO_TRANSACAO_VC)
+
+#seleção dos meses
+
+#maio
+maio2020 = as.data.frame(table(filter(dados2, DATA_DA_MOVIMENTACAO >= "2020-05-01" & DATA_DA_MOVIMENTACAO <= "2020-05-31" & TIPO_TRANSACAO_VC == "CREDITO_GERADO_POR_COMPRA_DE_VC")))
+mai20 = sum(maio2020$Freq)
+
+#junho
+junho2020 = as.data.frame(table(filter(dados2, DATA_DA_MOVIMENTACAO >= "2020-06-01" & DATA_DA_MOVIMENTACAO <= "2020-06-30" & TIPO_TRANSACAO_VC == "CREDITO_GERADO_POR_COMPRA_DE_VC")))
+jun20 = sum(junho2020$Freq)
+
+#julho
+julho2020 = as.data.frame(table(filter(dados2, DATA_DA_MOVIMENTACAO >= "2020-07-01" & DATA_DA_MOVIMENTACAO <= "2020-07-31" & TIPO_TRANSACAO_VC == "CREDITO_GERADO_POR_COMPRA_DE_VC")))
+jul20 = sum(julho2020$Freq)
+
+#agosto
+agosto2020 = as.data.frame(table(filter(dados2, DATA_DA_MOVIMENTACAO >= "2020-08-01" & DATA_DA_MOVIMENTACAO <= "2020-08-31" & TIPO_TRANSACAO_VC == "CREDITO_GERADO_POR_COMPRA_DE_VC")))
+ago20 = sum(agosto2020$Freq)
+
+#setembro
+setembro2020 = as.data.frame(table(filter(dados2, DATA_DA_MOVIMENTACAO >= "2020-09-01" & DATA_DA_MOVIMENTACAO <= "2020-09-30" & TIPO_TRANSACAO_VC == "CREDITO_GERADO_POR_COMPRA_DE_VC")))
+set20 = sum(setembro2020$Freq)
+
+#outubro
+outubro2020 = as.data.frame(table(filter(dados2, DATA_DA_MOVIMENTACAO >= "2020-10-01" & DATA_DA_MOVIMENTACAO <= "2020-10-31" & TIPO_TRANSACAO_VC == "CREDITO_GERADO_POR_COMPRA_DE_VC")))
+out20 = sum(outubro2020$Freq)
+
+#Data base para construção do gráfico
+v3_meses = c(mai20, jun20, jul20, ago20, set20, out20)
+v3_nomes = c("Mai", "Jun", "Jul", "Ago", "Set", "Out")
+
+v3_meses = as.data.frame(v3_meses)
+v3_meses = cbind(v3_meses, v3_nomes)
+
+colnames(v3_meses)[1] = "COMPRAS"
+colnames(v3_meses)[2] = "Mês"
+
+#Construção do gráfico de barras
+library(ggplot2)
+
+v3_meses$Mês = factor(v3_meses$Mês, levels = v3_meses$Mês, ordered= T)
+
+ggplot(v3_meses, aes(x = Mês, y = COMPRAS, fill = Mês)) +
+  geom_col() +
+  labs(title = "COMPRA DO VALE CRÉDITO NOS ÚLTIMOS 6 MESES")
+
+```
+\
+Pelo gráfico podemos perceber uma baixa demanda nos meses de **Maio** e **Junho**, começando uma recuperação no mês de **Julho**. Uma provável justificativa deste cenário é a Pandemia do COVID-19 que no primeiro semestre de 2020 provou restrições mais sérias ao comércio em geral. 
+
+\
+Tais restrições foram flexibilizadas no segundo semestre de 2020, justificando, assim, uma recuperação do crescimento a partir do mês de **julho**. 
+
+\
+##### QUESTÃO 4: Qual modelo matemático/estatístico você utilizaria para prever o crescimento para os próximos 6 meses? 
+
+\
+Com os fatores apresentados, o número de operações de compra do vale crédito nos últimos seis meses descrevem a forma de uma função exponencial. Para realizar uma projeção futura, seria interessante a análise através de uma **Distribuição normal**.
+\
+\
+\
+\
+Agradeço a oportunidade da realização deste desafio. Foi imensamente gratificante fazê-lo, pois consegui colocar em prática os conhecimentos que venho adquirindo na Universidade e em demais cursos que tenho realizado.
+
+\
+Espero conseguir fazer parte da equipe de Data Analytics da Bemol Digital para cada vez mais me capacitar na área e contribuir com o desenvolvimento do trabalho da equipe. 
+
+\
+Mais uma vez, agradeço pela oportunidade !
+
+\
+Matheus Bastos. 
+
+
+
